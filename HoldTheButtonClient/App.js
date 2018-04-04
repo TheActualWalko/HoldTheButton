@@ -14,8 +14,7 @@ import {
 import {
   press,
   release,
-  getState,
-  registerOnPlayerCount
+  getState
 } from './api';
 import TimeDelta from './TimeDelta';
 
@@ -24,54 +23,50 @@ type State = {
   pressed: boolean,
   playing: boolean,
   gameStart: number,
-  playerCount: number
+  numPlayers: number
 };
 
 export default class App extends Component<Props, State> {
   state = {
-    playerCount: 1
+    numPlayers: 1
   }
   componentDidMount() {
-    this.fetchState();
-    registerOnPlayerCount((playerCount) => this.setState({ playerCount }));
-  }
-  fetchState() {
-    getState((playing, gameStart) => {
-      this.setState({ playing, gameStart });
-      clearTimeout(this.fetchTimeout);
-      if (!playing) {
-        this.fetchTimeout = setTimeout(
-          () => this.fetchState(),
-          gameStart - Date.now()
-        );
-      }
-    });
+    this.sync();
   }
   componentWillUnmount() {
-    clearTimeout(this.fetchTimeout);
+    clearTimeout(this.refreshTimeout);
+  }
+  sync() {
+    console.log('syncing');
+    getState((state) => this.receiveState(state));
+  }
+  receiveState([gameStart, numPlayers]) {
+    clearTimeout(this.refreshTimeout);
+    this.setState({ gameStart, numPlayers });
+    const now = Date.now();
+    if (gameStart > now) {
+      this.refreshTimeout = setTimeout(() => this.sync(), gameStart - now);
+    }
   }
   render() {
     return (
       <View style={styles.container}>
-        {
-          this.state.playing
-            ? <Text>Playing against {this.state.playerCount - 1} others</Text>
-            : <Text>Next game in <TimeDelta time={this.state.gameStart} /></Text>
-        }
+        <Text><TimeDelta time={this.state.gameStart} /></Text>
+        <Text>
+          {this.state.pressed ? `Playing against ${this.state.numPlayers - 1} others`}
+        </Text>
         <TouchableWithoutFeedback
           onPressIn={() => {
             this.setState({pressed: true});
-            press();
+            press((state) => this.receiveState(state));
           }}
           onPressOut={() => {
-            this.setState({pressed: false, playing: false});
-            release(() => this.fetchState());
+            this.setState({pressed: false});
+            release((state) => this.receiveState(state));
           }}
         >
           <View style={this.state.pressed ? styles.pressedButton : styles.button}>
-            <Text>
-              {this.state.pressed ? 'PRESSED' : 'IDLE'}
-            </Text>
+            <Text>Button!</Text>
           </View>
         </TouchableWithoutFeedback>
       </View>
