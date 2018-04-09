@@ -53,7 +53,7 @@ export default class App extends Component<Props, State> {
       <View style={styles.container}>
         <Text><TimeDelta time={this.state.gameStart} /></Text>
         <Text>
-          {this.state.pressed ? `Playing against ${this.state.numPlayers - 1} others`}
+          {this.state.pressed ? `Playing against ${this.state.numPlayers - 1} others` : 'Press the button to join the next game'}
         </Text>
         <TouchableWithoutFeedback
           onPressIn={() => {

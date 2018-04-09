@@ -1,7 +1,7 @@
 // @flow
 
 import io from 'socket.io-client';
-const socket = io('http://192.168.0.14:1337');
+const socket = io('http://sam-watkinson.com:1337');
 let onPlayerCount;
 
 export const press = (callback) => socket.emit('press', callback);
