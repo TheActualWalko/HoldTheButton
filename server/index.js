@@ -32,7 +32,12 @@ io.on('connection', (socket) => {
     callback(getState(playerID));
   });
   socket.on('release', (callback) => {
+    const game = gamesByPlayerID[playerID];
     gamesByPlayerID[playerID] = null;
+    const playersLeft = getPlayerIDs(game);
+    if (playersLeft.length === 1) {
+      socketsByPlayerID[playersLeft[0]].emit('win');
+    }
     callback(getState(playerID));
   });
   socket.on('getState', (callback) => {
@@ -41,9 +46,10 @@ io.on('connection', (socket) => {
 });
 
 const queueNextGame = () => {
-  nextGame = Math.ceil(Date.now() / GAME_TIME_INTERVAL) * GAME_TIME_INTERVAL;
+  const gmt = Date.now();
+  nextGame = Math.ceil(gmt / GAME_TIME_INTERVAL) * GAME_TIME_INTERVAL;
   console.log(`game ${nextGame} starting`);
-  setTimeout(queueNextGame, nextGame - Date.now());
+  setTimeout(queueNextGame, nextGame - gmt);
 }
 
 queueNextGame();

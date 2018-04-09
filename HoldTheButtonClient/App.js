@@ -51,7 +51,6 @@ export default class App extends Component<Props, State> {
   render() {
     return (
       <View style={styles.container}>
-        <Text><TimeDelta time={this.state.gameStart} /></Text>
         <Text>
           {this.state.pressed ? `Playing against ${this.state.numPlayers - 1} others` : 'Press the button to join the next game'}
         </Text>
@@ -69,6 +68,7 @@ export default class App extends Component<Props, State> {
             <Text>Button!</Text>
           </View>
         </TouchableWithoutFeedback>
+        <Text>{this.state.gameStart > Date.now() && <TimeDelta time={this.state.gameStart} />}</Text>
       </View>
     );
   }
